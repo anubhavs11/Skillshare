@@ -177,7 +177,6 @@
 								$user=$_SESSION['user'];
 							 foreach($db->query("SELECT * FROM users WHERE username='$user'") as $result){
 							?>
-
 							<input name="fullname" style="box-shadow: 0 0 black;margin-top:40px;" type="text" 
 							class="form-control" value="<?php echo $result['fullname']; ?>"/>
 							

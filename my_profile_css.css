@@ -1,0 +1,144 @@
+w #foll{
+			    color: #fff;
+    height: 38px;
+    font-size: 16px;
+    width: 80px;
+    background-color: #337ab7;
+    border-color: #4f8dc3;
+		}
+		#edit_profile{
+	  	  margin-top:20px;
+		  font-family: unset;
+	  }
+	  #edit_profile:hover{
+	  	  margin-top:20px;
+		  background-color:white;
+		  font-family: unset;
+		  box-shadow: 0 0 black;
+	  }
+	  #edit_profile:active{
+	  	  margin-top:20px;
+	  	  box-shadow: 0 0 black;
+		  background-color:white;
+		  color:gray;
+		  border:1px solid gray;
+		  font-family: unset;
+	  }
+	  #username_heading{
+	  	  font-family:inherit;
+	  }
+	  #discussion{
+		     font-family: cursive;
+			 font-size: 14px;
+			 padding-top:8px;
+			 color:black;
+	  }
+	  #tabs{
+	  	  margin-top:60px;
+		  background-color:;
+	  }
+	  #tab_item{
+		background-color:white;
+		border-color:white;
+		font-size: initial;
+		margin:0px;
+	    color: #555;
+	  }
+	  .nav-pills>li>a{
+		font-size: 18px;
+	  }
+	  #tab_item:hover{
+	    background-color:#fafafa;
+		border-color:#fafafa;
+		font-size: initial;
+		margin:0px;
+	    color: #555;
+	  }
+	  #btns{
+	  	  margin:0px;
+		  padding:0px;
+	  }
+	  #title_val{
+	    font-size: 22px;
+    	font-style: initial;
+    	font-family: sans-serif;
+    	color: black;
+	  }
+	  #title{
+	  	font-size: 30px;
+    	font-family: -webkit-body;
+    	margin-bottom: 40px;
+	  }
+	  #discription{
+	    font-size: 16px;
+    	padding: 4px;
+	  }
+	  #prize{
+	  	font-size: 24px;
+    	font-family: inherit;	
+	  }
+		#posted_by{
+			margin-top: 6px;
+			font-size: 14px;
+		}
+		#follow_post_btn,#follow_post_btn2,#follow_post_btn3,#follow_post_btn4,#following
+		,#following2,#following3,#following4{
+			margin-right:10px;
+		    border-radius: 4px;
+			line-height: 10px;
+			background-color: #ccc;
+		}
+		#open_post{
+			margin-left: 60px;
+			margin-right: 10px;
+			line-height: 10px;
+			box-shadow: 0 0 gray;
+			border-radius: 4px;
+			background-color: #eee;
+		}
+		#add_watchlist,#add_watchlist2,#add_watchlist3,#add_watchlist4,#remove_watchlist
+		,#remove_watchlist2,#remove_watchlist3,#remove_watchlist4{
+			height:30px;
+			padding:0px;
+			padding-left: 5px;
+			padding-right: 5px;,
+			border-radius: 4px;
+		}
+		#textarea{
+			box-shadow: 0 0 black;
+			border-radius: 0px;
+			margin:0px;
+			padding:0px;
+			font-size: 16px;
+		}
+		#code_snippet{
+			background-color: white;
+			border-color: white;
+			box-shadow: 0 0 white;
+			border-width: 0px;
+		}
+		#code_textarea{
+			font-family: monospace;
+			background-color: #eee;
+			border:0;
+			outline: 0;
+		}
+		a {
+			color:black;
+			text-decoration: none;
+		}
+		#ques{
+		font-size: 20px;
+		font-weight: bold;
+		font-family: sans-serif;
+		color: black;	
+		}
+		#jumbotron{
+		padding-right: 60px;
+		padding: 10px;
+		padding-left: 60px;
+		}
+		#btn_list{
+			font-size: 16px;
+			font--weight:600px;
+		}

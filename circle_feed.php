@@ -1,7 +1,12 @@
 <?php
+require 'pdo.php';
 include 'user_header.php';
 ?>
 <style>
+		#circle_btn,#circle_btn:hover{
+			border-radius:4px;
+			background-color: blue;
+		}
 		#comment_btn{
 			margin-left: 60px;
 			margin-right: 10px;
@@ -80,7 +85,7 @@ include 'user_header.php';
 		}
 </style>
 <body>
-	<script type="text/javascript">
+<script type="text/javascript">
 		function add_bold1() {
 			var val=$('#post_text').val();
 			document.getElementById('post_text').value=val+' **Bold**';
@@ -119,7 +124,7 @@ include 'user_header.php';
 			document.getElementById("text_codes").innerHTML=a;
 			document.getElementById("codes").innerHTML=code;
   		}
-      	function add_post(){
+      	function add_post(id){
 			$('#notification').hide();
       		var myString=document.getElementById('post_text').value;
   			var a=myString.replace(/<[^>]*>/g,'');
@@ -137,8 +142,9 @@ include 'user_header.php';
 				}
 				var code1=document.getElementById('code_textarea').value;
       			$.post("home2.php",{
-      				discussion: a,
-					code:code1
+      				circle_dis: a,
+					code:code1,
+					circle_id:id
       			});
       			document.getElementById('post_text').value ='';
       			var xhttp = new XMLHttpRequest();
@@ -147,79 +153,168 @@ include 'user_header.php';
 			//$('#comments').load('home.php' +  ' #comments');
 			$('body').load('home.php');
       	}
-	</script>
+</script>
 	<div class="container">
 		<div class="row" style="margin-top: 60px;">
-			<!--Adding a new post -->
+			<?php
+				$stmt2=$db->prepare("SELECT * FROM circle_list WHERE creater=:creater");
+      			$stmt2->bindParam(":creater",$_SESSION['user']);
+      			$stmt2->execute();
+      			$count=$stmt2->rowCount();
+      			$username=$_SESSION['user'];
+      			$admin=0;
+      			if($count>0){
+					foreach($db->query("SELECT * FROM circle_list WHERE creater='$username'") as $row){
+						$circle_id=$row['id'];
+						$admin=1;
+						break;
+					}
+				}else{
+					foreach($db->query("SELECT * FROM circle_mem WHERE member='$username'") as $row1){
+						$circle_id=$row1['circle_id'];
+						$stmt=$db->prepare("SELECT * FROM circle_list WHERE id=:id");
+						$stmt->bindParam(":id",$circle_id);
+						$stmt->execute();
+						$row=$stmt->fetch();
+						break;
+					}
+				}
+			?>
 			<div class="col-lg-8 col-lg-offset-2 col-md-11 col-md-offset-1 col-sm-12 col-xs-12">
-				<button class="btn btn-primary" style="text-align:center;" data-target="#add_post" data-toggle="collapse" >Add post</button>
-				<div id="add_post" class="collapse">
-					<div class="w3-card-4">
-						<div class="panel panel-default">
-							<header style="text-align: center;" class="w3-container w3-blue-gray">
-							<h4>Start a discussion</h4>
-							</header>
-							<div class="w3-container">
-		  					<div class="panel-header" style="padding:15px;">
-		  						<a onclick="add_bold1()" ><span class="glyphicon glyphicon-bold"></span></a> &nbsp;&nbsp;
-								<a onclick="add_list1()" ><span class="glyphicon glyphicon-th-list"></span></a> &nbsp;&nbsp;
-		  						<a onclick="add_italic1()"><span class="glyphicon glyphicon-italic"></span></a> &nbsp;&nbsp;
-		  						<a data-target="#add_code" data-toggle="modal" id="code_snippet">
-								<span style="font-size: 16px;font-weight: bold;">&lt;/&gt;</span></a>
-								<a id="notification" class="alert alert-success collapse">code added</a>
-		  					</div>
-		  					<textarea id="post_text" class="form-control" placeholder=" Write Your text here " rows="6" style="border-radius: 0px;margin-bottom: 5px;"></textarea>
-							<button style="border-color: white;"  id="comment_post" onclick="add_post()" class="btn btn-primary pull-right w3-blue" >Post</button>
-							<button data-target="#preview_post" data-toggle="modal" onclick="previews()" class="btn btn-default pull-right w3-light-gray" type="submit" style='margin-right:5px;border-color: white;'>preview</button>
-		  				</div>
-						<!-- preview of the text data -->
-						<div class="modal " tabindex="-1" id="preview_post" data-backdrop="static">
-			    			<div class="modal-dialog modal-md">
-			        			<div class="modal-content">
-			        				<div class="modal-header">
-			        					<button type="button" class="close" data-dismiss="modal">
-						                    &times;
-						                </button>
-			        					<h4 style="font-weight: bold;" class="modal-title">Preview</h4>
-			        				</div>
-			        				<div class="modal-body" data-spy="scroll">
-			        					<p id="text_codes"> </p>
-										<pre hidden id="codes"> </pre>
-			        				</div>
-			        				<div class="modal-footer">
-			        					<button class="btn btn-default pull-right" 
-										data-dismiss='modal' type="submit">Okay</button>
-			        				</div>
-			        			</div>
-			        		</div>
-			        	</div>
-						<!-- adding code snippet -->
-			  			<div class="modal " tabindex="-1" id="add_code" data-backdrop="static">
-			    			<div class="modal-dialog modal-md">
-			        			<div class="modal-content">
-			        				<div class="modal-header">
-			        					<button type="button" class="close" data-dismiss="modal">
-						                    &times;
-						                </button>
-			        					<h4 style="font-weight: bold;" class="modal-title">Add a Code Snippet</h4>
-			        				</div>
-			        				<div class="modal-body" data-spy="scroll">
-			        					<textarea id="code_textarea" placeholder=" Write your code here.."
-										class="form-control" rows="15"></textarea>
-			        				</div>
-			        				<div class="modal-footer">
-			        					<button onclick="add_code_btn1()" id="add_code_btn" class="btn btn-default pull-right" 
-										data-dismiss='modal' type="submit">Add</button>
-			        				</div>
-			        			</div>
-			        		</div>
-			        	</div>
-			        </div>
-			    	</div>
-			    </div>
+				<form action="add_mem.php" method="post">
+				<div class="page-header">
+					<h3><i class="fa fa-users" style="color:blue;font-size:48px;"></i>
+					<?php echo ' '.$row['name'];
+					if($admin==1){
+					?>
+					<button name="circle_id" type="submit" class="w3-button" style="font-size: 18px;border-radius: 4px;" value="<?php echo $circle_id; ?>"> <i class="fas fa-user-plus"></i></button></h3>
+					<?php } ?>
+				</div>
+					<div class="w3-bar w3-light-gray">
+						<button type="button" class="w3-button" style="font-size: 16px;" href="#add_post" data-toggle="tab" >Add post</button>
+						<button type="button" class="w3-button" style="font-size: 16px;" href="#circles" data-toggle="tab" >All Circles</button>
+						<button type="button" class="w3-button " style="font-size: 16px;" href="#circle_mem" data-toggle="tab" >Members</button>
+					</div>
+					    </form>
+					 <div class="tab-content">
+					 	<div id="circle_mem" class="tab-pane fade w3-animate-right">
+					          <h4><b>Circle Members</b></h4>
+					        	<div class="w3-card-4 ">
+					        	<table class="table">
+					        	<?php 
+								foreach($db->query("SELECT * FROM circle_mem WHERE circle_id='$circle_id'") as $row){
+					      			$username=$row['member'];
+					      			$stmt2=$db->prepare("SELECT * FROM users WHERE username=:username");
+					      			$stmt2->bindParam(":username",$username);
+					      			$stmt2->execute();
+					      			$row2=$stmt2->fetch();
+					      			$fullname=$row2['fullname'];
+					      			$image=$row2['picture'];
+					        	?>
+					        	<tr>
+					        		<td><img src="<?php echo 'profile_pics/'.$image;?>" class="img-responsive img-circle"
+					        		width="50" height="50" /></td>
+					          		<td><h4><?php echo $fullname.'('.$row['member'].')'; ?></h4></td>
+					          	</tr>
+					        	<?php } ?>
+					        	</table> 
+					        </div>
+					  	</div>
+						<div id="add_post" class="tab-pane w3-animate-zoom">
+							<div class="w3-card-4">
+								<div class="panel panel-default">
+									<header style="text-align: center;" class="w3-container w3-blue-gray">
+									<h4>Start a discussion</h4>
+									</header>
+									<div class="w3-container">
+				  					<div class="panel-header" style="padding:15px;">
+				  						<a onclick="add_bold1()" ><span class="glyphicon glyphicon-bold"></span></a> &nbsp;&nbsp;
+										<a onclick="add_list1()" ><span class="glyphicon glyphicon-th-list"></span></a> &nbsp;&nbsp;
+				  						<a onclick="add_italic1()"><span class="glyphicon glyphicon-italic"></span></a> &nbsp;&nbsp;
+				  						<a data-target="#add_code" data-toggle="modal" id="code_snippet">
+										<span style="font-size: 16px;font-weight: bold;">&lt;/&gt;</span></a>
+										<a id="notification" class="alert alert-success collapse">code added</a>
+				  					</div>
+				  					<textarea id="post_text" class="form-control" placeholder=" Write Your text here " rows="6" style="border-radius: 0px;margin-bottom: 5px;"></textarea>
+									<button style="border-color: white;"  id="<?php echo $circle_id; ?>" 
+										onclick="add_post(this.id)" class="btn btn-primary pull-right w3-blue" >Post</button>
+									<button data-target="#preview_post" data-toggle="modal" onclick="previews()" class="btn btn-default pull-right w3-light-gray" type="submit" style='margin-right:5px;border-color: white;'>preview</button>
+				  				</div>
+								<!-- preview of the text data -->
+								<div class="modal " tabindex="-1" id="preview_post" data-backdrop="static">
+					    			<div class="modal-dialog modal-md">
+					        			<div class="modal-content">
+					        				<div class="modal-header">
+					        					<button type="button" class="close" data-dismiss="modal">
+								                    &times;
+								                </button>
+					        					<h4 style="font-weight: bold;" class="modal-title">Preview</h4>
+					        				</div>
+					        				<div class="modal-body" data-spy="scroll">
+					        					<p id="text_codes"> </p>
+												<pre hidden id="codes"> </pre>
+					        				</div>
+					        				<div class="modal-footer">
+					        					<button class="btn btn-default pull-right" 
+												data-dismiss='modal' type="submit">Okay</button>
+					        				</div>
+					        			</div>
+					        		</div>
+					        	</div>
+								<!-- adding code snippet -->
+					  			<div class="modal " tabindex="-1" id="add_code" data-backdrop="static">
+					    			<div class="modal-dialog modal-md">
+					        			<div class="modal-content">
+					        				<div class="modal-header">
+					        					<button type="button" class="close" data-dismiss="modal">
+								                    &times;
+								                </button>
+					        					<h4 style="font-weight: bold;" class="modal-title">Add a Code Snippet</h4>
+					        				</div>
+					        				<div class="modal-body" data-spy="scroll">
+					        					<textarea id="code_textarea" placeholder=" Write your code here.."
+												class="form-control" rows="15"></textarea>
+					        				</div>
+					        				<div class="modal-footer">
+					        					<button onclick="add_code_btn1()" id="add_code_btn" class="btn btn-default pull-right" 
+												data-dismiss='modal' type="submit">Add</button>
+					        				</div>
+					        			</div>
+					        		</div>
+					        	</div>
+					        </div>
+					    	</div>
+					    </div>
+					    <div id="circles" class="tab-pane w3-animate-top">
+					    	<div class="w3-card-4 w3-padding" align="center">
+					    		<?php 
+							$username=$_SESSION['user'];
+							foreach($db->query("SELECT * FROM circle_list WHERE creater='$username'") as $row){
+							$circle_id=$row['id'];
+							?>		
+							<h3><i class="fa fa-users" style="color:blue;font-size:24px;"></i>
+								<a href="<?php echo 'circle_feed2.php?circle_id='.$circle_id; ?>"><?php echo ' '.$row['name']; ?></a></h3>
+
+							<?php
+							}
+							foreach($db->query("SELECT * FROM circle_mem WHERE member='$username'") as $row){
+								$id=$row['circle_id'];
+								$stmt=$db->prepare("SELECT * FROM circle_list WHERE id=:id");
+								$stmt->bindParam(":id",$id);
+								$stmt->execute();
+								$row=$stmt->fetch();
+								?>
+								<h3><i class="fa fa-users" style="color:blue;font-size:24px;"></i>
+									<a href="<?php echo 'circle_feed2.php?circle_id='.$circle_id; ?>"><?php echo ' '.$row['name']; ?></a></h3>
+							<?php
+								}
+							?>
+					    	</div>					    	
+					    </div>
+					</div>
         			<?php
 						include 'pdo.php';
-						if(!($db->query("SELECT * FROM discussions"))){
+						if(!($db->query("SELECT * FROM discussions WHERE circle_id='$circle_id'"))){
 								echo "no discussions till now , be the first to start";
 							}
 						else{
@@ -227,7 +322,7 @@ include 'user_header.php';
 							$b=0;
 							$post_no=0;
 							$c=0;
-							foreach($db->query("SELECT * FROM discussions") as $row){
+							foreach($db->query("SELECT * FROM discussions WHERE circle_id='$circle_id'") as $row){
 								$post_no=$post_no+1;
 								$b=$b+1;
 								$a=$a+1;
@@ -240,7 +335,7 @@ include 'user_header.php';
 									<div class="media-left">
 								              <img 
 												<?php 
-												$user=$row['username'];
+												$user=$_SESSION['user'];
 												$stmt=$db->prepare("SELECT picture from users WHERE username=:username");
 												$stmt->bindParam(":username",$user);
 												$stmt->execute();
@@ -341,7 +436,6 @@ include 'user_header.php';
 
 						    <button  value="<?php echo $row['id']; ?>" onclick="remove_watchlist(this.id)" class="btn btn-default	" id="<?php echo 'remw'.$b;?>" style="padding:0px;font-size:25px;height:30px;padding-left:5x;padding-right: 5px;border-radius: 4px;"><span class="glyphicon glyphicon-heart"></span></button>
 								<?php
-									$stmt=$db->prepare("SELECT * from watchlist WHERE username=:username AND discussion_id=:id");
 									$stmt->bindParam(':username',$_SESSION['user']);
 									$stmt->bindValue(':id',$row['id']);
 									$stmt->execute();
@@ -440,7 +534,7 @@ include 'user_header.php';
 						document.getElementById("code").innerHTML=code;
 			  		}
                 </script>
-					<div id="<?php echo 'comment_btn'.$post_no; ?>" class="collapse w3-animate-right">
+					<div id="<?php echo 'comment_btn'.$post_no; ?>" class="collapse">
 						<div class="row">
 				  			<div class="col-lg-10">
 				  				<div class="panel panel-default">
@@ -462,7 +556,7 @@ include 'user_header.php';
 				  				</div>
 				  			</div>
 							<!-- preview of the text data -->
-							<div class="modal w3-animate-zoom" tabindex="-1" id="preview_data" data-backdrop="static">
+							<div class="modal " tabindex="-1" id="preview_data" data-backdrop="static">
 				    			<div class="modal-dialog modal-md">
 				        			<div class="modal-content">
 				        				<div class="modal-header">
@@ -483,7 +577,7 @@ include 'user_header.php';
 				        		</div>
 				        	</div>
 							<!-- adding code snippet -->
-				  			<div class="modal w3-animate-zoom" tabindex="-1" id="<?php echo 'add_code'.$post_no;?>" data-backdrop="static">
+				  			<div class="modal " tabindex="-1" id="<?php echo 'add_code'.$post_no;?>" data-backdrop="static">
 				    			<div class="modal-dialog modal-md">
 				        			<div class="modal-content">
 				        				<div class="modal-header">
@@ -517,7 +611,7 @@ include 'user_header.php';
 				            <div class="media-left">
 					              <img 
 									<?php 
-									$user=$comments['username'];
+									$user=$_SESSION['user'];
 									$stmt=$db->prepare("SELECT picture from users WHERE username=:username");
 									$stmt->bindParam(":username",$user);
 									$stmt->execute();
@@ -529,10 +623,7 @@ include 'user_header.php';
 				            <div class="media-body">
 					              <h4 class="media-heading"><?php echo $comments['username'] ?><small><i> Posted on <?php echo $comments['date1']; ?></i></small></h4>
 				    	          <p><?php echo $comments['message']; ?></p>
-				    	          <?php
-				    	          if(! empty($comments['code'])){?>
-				    	          <pre><?php echo $comments['code']; ?></pre>
-				    	      		<?php }?>
+
 				    	<div class="btn-group">
             		<!--awesome -->
             		<script type="text/javascript">
@@ -573,8 +664,8 @@ include 'user_header.php';
 										<?php
 											$stmt=$db->prepare("SELECT * from awesome WHERE username=:username 
 												AND comment_id=:id");
-											$stmt->bindParam(':username',$comments['comment_id']);
-											$stmt->bindValue(':id',$_SESSION['user']);
+											$stmt->bindParam(':username',$_SESSION['user']);
+											$stmt->bindValue(':id',$comments['comment_id']);
 											$stmt->execute();
 											$count=$stmt->rowCount();
 											if($count<=0){
@@ -604,4 +695,3 @@ include 'user_header.php';
 		</div>
 	</div>
 </body>
-<br>

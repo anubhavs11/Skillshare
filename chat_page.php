@@ -16,6 +16,7 @@ if (session_status() == PHP_SESSION_NONE) {
 <html lang="en">
   <head>
     <meta charset="utf-8">
+      <link rel='stylesheet' href='fontawesome-free-5.0.9\web-fonts-with-css\css\fontawesome-all.min.css'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Chat Page</title>
@@ -64,9 +65,6 @@ $(document).ready(function(){
 	  border-right-color: #fff2f2;
       border-right-width: 1px;
       border-right-style: outset;
-	  }
-	  #search_btn{
-	  	  margin-top:60px;
 	  }
 	  #mypic{
 	  	  margin-right:310px;
@@ -155,50 +153,101 @@ $(document).ready(function(){
 <div class="container">
 <div class="row hidden-sm hidden-xs" style="overflow:hidden;">
    <div id="left" class="col-lg-4 col-md-4">
-      <div style="background-color:#eeeeee;
-				height:50px" class="navbar-header navbar-fixed-top">
+      <div style="background-color:#eeeeee;height:50px;" class="navbar-header navbar-fixed-top">
         <ul class="nav navbar-nav">
-            <li id="mypic" class="active"><img style="margin-left:40px;margin-top:5px;" 
-					src="anubhav.jpg" height="40" width="40"
-					class="img-circle img-responsive"></img></li>
-			<li class="pull-right"><a href="home.php">Back to Home</a>
-			</li>
+            <li id="mypic" class="active">
+            	<img style="margin-left:40px;margin-top:5px;" 
+            	<?php 
+            	$stmt=$db->prepare("SELECT * FROM users WHERE username=:username");
+            	$stmt->bindParam(":username",$_SESSION['user']);
+            	$stmt->execute();
+            	$res=$stmt->fetch();
+            	$image=$res['picture'];
+            	?>
+            	src='<?php echo 'profile_pics/'.$image; ?>' height="40" width="40" class="img-circle img-responsive"></img></li>
+			<li class="pull-right"><h4 style="margin-top: 14px;"><a href="home.php"> <i style="font-size: 25px;" class="fa fa-home"></i></a></h4></li>
 		</ul>
-     </div>	
-     <form id="search_btn">
-		<div class="input-group">
-			<input type="text" placeholder="search your messages" class="form-control"/>
-				<span class="input-group-btn">
-					<a style="height: 34px;" class="btn btn-default" type="button">
-						<span class="glyphicon glyphicon-search"></span>
-					</a>
-				</span>
-		</div>
-	 </form>
+     </div>	<div style="margin-top: 70px;">
 	 			<?php
 				require 'pdo.php';
 				$username=$_SESSION['user'];
-					foreach($db->query("SELECT * FROM followings WHERE username ='$username'") as $row){ ?>
+				$array = array(); 
+				$n=0;
+				$count=0;
+					foreach($db->query("SELECT DISTINCT sender FROM chats WHERE receiver='$username' order by timestamp1") as $row){ 
+						if($row['sender']!=$_SESSION['user']){
+							$count=$count+1;
+							$n=$n+1;
+							$array[$n]=$row['sender'];
+						?>
 					<div class="row">
 							<?php
 						echo '<form id="form_btn" action="chat_page.php" method="post">';
-							$to=$row['following']; ?>
+							$to=$row['sender']; ?>
 							 <button id="list_btn" name="to" value='<?php echo $to;?>' type="submit">
 							<div class="col-lg-3 col-md-3 hidden-sm hidden-xs">
-								<?php 
-									  echo '<img src="anubhav.jpg" height="60" width="60"	
-									  class="img-circle img-responsive"></img> ';
-								?>
+								<img 
+				            	<?php 
+				            	$stmt=$db->prepare("SELECT * FROM users WHERE username=:username");
+				            	$stmt->bindParam(":username",$to);
+				            	$stmt->execute();
+				            	$res=$stmt->fetch();
+				            	$image=$res['picture'];
+				            	?>
+				            	src='<?php echo 'profile_pics/'.$image; ?>'
+									  height="60"  width="60" class="img-circle img-responsive"></img>
+								
 							</div>
 							<div class="col-lg-9 col-md-9 hidden-sm hidden-xs">
-								<?php	echo '<p id="names">'.$row['following'].'</p>';
-								}?>
+								<?php	echo '<p id="names">'.$row['sender'].'</p>';
+								?>
 							</div>
 							<?php
 								echo '</button>';
 								echo '</form>';
 								?>
 						</div>
+
+						<?php }}
+					foreach($db->query("SELECT * FROM followings WHERE username ='$username'") as $row){ 
+						$count=$count+1;
+						if (in_array($row['following'], $array, TRUE))
+						  {
+						  }else{
+						?>
+						<div class="row">
+							<?php
+						echo '<form id="form_btn" action="chat_page.php" method="post">';
+							$to=$row['following']; ?>
+							 <button id="list_btn" name="to" value='<?php echo $to;?>' type="submit">
+							<div class="col-lg-3 col-md-3 hidden-sm hidden-xs">
+								<img 
+				            	<?php 
+				            	$stmt=$db->prepare("SELECT * FROM users WHERE username=:username");
+				            	$stmt->bindParam(":username",$to);
+				            	$stmt->execute();
+				            	$res=$stmt->fetch();
+				            	$image=$res['picture'];
+				            	?>
+				            	src='<?php echo 'profile_pics/'.$image; ?>'
+									  height="60"  width="60" class="img-circle img-responsive"></img>
+								
+							</div>
+							<div class="col-lg-9 col-md-9 hidden-sm hidden-xs">
+								<?php	echo '<p id="names">'.$row['following'].'</p>';
+								?>
+							</div>
+							<?php
+								echo '</button>';
+								echo '</form>';
+								?>
+						</div>
+						<?php }}
+						if($count==0){
+							echo '<h4>No followings in the list</h4>';
+						}
+						?>
+			</div>
    </div>
    <div class="col-lg-8 col-md-8 hidden-sm hidden-xs" >
 	  <div style="background-color:#eeeeee;position:relative;
@@ -206,16 +255,29 @@ $(document).ready(function(){
         <ul  data-spy="affix" class="nav navbar-nav">
 			<li><div class="vl"></div></li>
             <li id="reciever_pic" class="active"><img style="margin-left:10px;margin-top:5px;" 
-					src="anubhav.jpg" height="40" width="40"
+            	<?php 
+		            	if(isset($_POST['to'])&&!empty($_POST['to'])){
+							$_SESSION['to']=$_POST['to'];
+							$to=$_POST['to'];
+						}
+						if(empty($_SESSION['to'])){
+							$_SESSION['to']="feedback";
+						}
+						$stmt2=$db->prepare("UPDATE notification SET seen=1 WHERE username=:username AND other_user=:other_user");
+						$stmt2->bindParam(":username",$_SESSION['user']);
+						$stmt2->bindParam(":other_user",$to);
+						$stmt2->execute();
+
+            			$stmt=$db->prepare("SELECT * FROM users WHERE username=:username");
+		            	$stmt->bindParam(":username",$to);
+		            	$stmt->execute();
+		            	$res=$stmt->fetch();
+		            	$image=$res['picture'];
+            	 	?>
+					src="<?php echo 'profile_pics/'.$image;?>" height="40" width="40"
 					class="img-circle img-responsive"></img></li>
             <li ><p id="head">
 			<?php 
-				if(isset($_POST['to'])&&!empty($_POST['to'])){
-					$_SESSION['to']=$_POST['to'];
-				}
-				if(empty($_SESSION['to'])){
-					$_SESSION['to']="feedback";
-				}
 				echo $_SESSION['to'];
 			?>
 			</p></li>
@@ -250,45 +312,99 @@ $(document).ready(function(){
 				height:50px" class="navbar-header navbar-fixed-top">
         		<ul class="nav navbar-nav">
             		<li class="pull-left"><img style="margin-left:40px;margin-top:0px;" 
-						src="anubhav.jpg" height="38" width="38"
+            			<?php 
+		            	$stmt=$db->prepare("SELECT * FROM users WHERE username=:username");
+		            	$stmt->bindParam(":username",$_SESSION['user']);
+		            	$stmt->execute();
+		            	$res=$stmt->fetch();
+		            	$image=$res['picture'];
+		            	?>
+						src="<?php echo 'profile_pics/'.$image; ?>" height="38" width="38"
 						class="img-circle img-responsive"></img></li>
-					<li class="pull-right"><a href="index.php">
-						<span style="font-size: 20px;margin-right:10px;" class="glyphicon glyphicon-home"></span></a>
+					<li class="pull-right"><a href="home.php">
+						 <i style="font-size: 25px;margin-right:10px;" class="fa fa-home"></i></a>
 						</li>
 				</ul>
-     		</div>	
-     		<form id="search_btn">
-				<div class="input-group">
-					<input type="text" placeholder="search your messages" class="form-control"/>
-						<span class="input-group-btn">
-							<a style="height: 34px;" class="btn btn-default" type="button">
-							<span class="glyphicon glyphicon-search"></span></a>
-						</span>
-				</div>
-	 		</form>
+     		</div>
+     		<div style="margin-top: 70px;">
  			<?php
-			require 'pdo.php';
-			$username=$_SESSION['user'];
-				foreach($db->query("SELECT * FROM followings WHERE username ='$username'") as $row){ ?>
-				<div class="row">
-						<?php
+				$username=$_SESSION['user'];
+				$array = array(); 
+				$n=0;
+				$count=0;
+					foreach($db->query("SELECT DISTINCT sender FROM chats WHERE receiver='$username' order by timestamp1") as $row){ 
+						if($row['sender']!=$_SESSION['user']){
+							$count=$count+1;
+							$n=$n+1;
+							$array[$n]=$row['sender'];
+						?>
+					<div class="row">
+							<?php
 						echo '<form id="form_btn" action="xs_chat_page.php" method="post">';
-						$to=$row['following']; ?>
-						 <button id="list_btn" name="to" value='<?php echo $to;?>' type="submit">
-						<div class="col-sm-3 col-xs-3">
-							<?php 
-								  echo '<img src="anubhav.jpg" height="60" width="60"	
-								  class="img-circle img-responsive"></img> ';
-							?>
+							$to=$row['sender']; ?>
+							 <button id="list_btn" name="to" value='<?php echo $to;?>' type="submit">
+							<div class="col-sm-3 col-xs-3 hidden-lg hidden-md">
+								<img 
+				            	<?php 
+				            	$stmt=$db->prepare("SELECT * FROM users WHERE username=:username");
+				            	$stmt->bindParam(":username",$to);
+				            	$stmt->execute();
+				            	$res=$stmt->fetch();
+				            	$image=$res['picture'];
+				            	?>
+				            	src='<?php echo 'profile_pics/'.$image; ?>'
+									  height="60"  width="60" class="img-circle img-responsive"></img>
+								
+							</div>
+							<div class="col-sm-9 col-xs-9 hidden-md hidden-lg">
+								<?php	echo '<p id="names">'.$row['sender'].'</p>';
+								?>
+							</div>
+							<?php
+								echo '</button>';
+								echo '</form>';
+								?>
 						</div>
-						<div class="col-sm-9 col-xs-9">
-							<?php	echo '<p id="names">'.$row['following'].'</p>';
-							}?>
+
+						<?php }}
+					foreach($db->query("SELECT * FROM followings WHERE username ='$username'") as $row){ 
+						$count=$count+1;
+						if (in_array($row['following'], $array, TRUE))
+						  {
+						  }else{
+						?>
+						<div class="row">
+							<?php
+						echo '<form id="form_btn" action="xs_chat_page.php" method="post">';
+							$to=$row['following']; ?>
+							 <button id="list_btn" name="to" value='<?php echo $to;?>' type="submit">
+							<div class="col-sm-3 col-xs-3 hidden-md hidden-lg">
+								<img 
+				            	<?php 
+				            	$stmt=$db->prepare("SELECT * FROM users WHERE username=:username");
+				            	$stmt->bindParam(":username",$to);
+				            	$stmt->execute();
+				            	$res=$stmt->fetch();
+				            	$image=$res['picture'];
+				            	?>
+				            	src='<?php echo 'profile_pics/'.$image; ?>'
+									  height="60"  width="60" class="img-circle img-responsive"></img>
+								
+							</div>
+							<div class="col-sm-9 col-xs-9 hidden-md hidden-lg">
+								<?php	echo '<p id="names">'.$row['following'].'</p>';
+								?>
+							</div>
+							<?php
+								echo '</button>';
+								echo '</form>';
+								?>
 						</div>
-						<?php
-							echo '</button>';
-							echo '</form>';
-							?>
+						<?php }}
+						if($count==0){
+							echo '<h4>No followings in the list</h4>';
+						}
+						?>
 					</div>
 		</div>
 	</div>

@@ -26,10 +26,10 @@
 			foreach($db->query("SELECT * FROM followings WHERE following='$user'") as $val){
 
 			$stmt2=$db->prepare("INSERT INTO notification(username,id,other_user,type) values(:username,:id,:other_user,:type)");
-			$stmt2->bindParam(":username",$_SESSION['user']);
+			$stmt2->bindParam(":username",$val['username']);
 			$stmt2->bindParam(":id",$id);
 			$stmt2->bindValue(":type","discussion");
-			$stmt2->bindParam(":other_user",$val['username']);
+			$stmt2->bindParam(":other_user",$_SESSION['user']);
 			$stmt2->execute();
 		}
 		}
@@ -51,10 +51,10 @@
 			foreach($db->query("SELECT * FROM followings WHERE following='$user'") as $val){
 
 			$stmt2=$db->prepare("INSERT INTO notification(username,id,other_user,type) values(:username,:id,:other_user,:type)");
-			$stmt2->bindParam(":username",$_SESSION['user']);
+			$stmt2->bindParam(":username",$val['username']);
 			$stmt2->bindParam(":id",$id);
 			$stmt2->bindValue(":type","discussion");
-			$stmt2->bindParam(":other_user",$val['username']);
+			$stmt2->bindParam(":other_user",$usr);
 			$stmt2->execute();
 		}
 		}
@@ -105,9 +105,13 @@
       			$stmt->execute();
 		}
 		if(isset($_POST['awesome'])&&!empty($_POST['awesome'])){
+				
+				$user = $_SESSION['user'];
+				$id = $_POST['awesome'];
+
       			$stmt=$db->prepare("INSERT INTO awesome(username,comment_id) VALUES(:username,:id)");
-      			$stmt->bindParam(":username",$_SESSION['user']);
-      			$stmt->bindParam(":id",$_POST['awesome']);
+      			$stmt->bindParam(":username",$user);
+      			$stmt->bindParam(":id",$id);
       			$stmt->execute();
 
       			$stmt2=$db->prepare("UPDATE comment SET awesome=awesome+1 WHERE comment_id=:id");
@@ -133,7 +137,6 @@
 				$stmt2->bindValue(":type","awesome");
 				$stmt2->bindParam(":other_user",$notifyto);
 				$stmt2->execute();
-
 
 		}
 		if(isset($_POST['thumbs_uped'])&&!empty($_POST['thumbs_uped'])){
